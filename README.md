@@ -6,8 +6,9 @@
 
 This project requires VSCode with the PlatformIO extension installed.
 
-Required libraries:
-1. ESP32Servo
+The following libraries also need to be installed through PlatformIO and added to the project:
+1. Blynk
+2. ESP32Servo
 
 ### Building
 
