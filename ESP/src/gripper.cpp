@@ -1,6 +1,7 @@
 #include "gripper.hpp"
 
 #include <Arduino.h>
+#include <ESP32Servo.h>
 
 Gripper::Gripper(const int PIN_ARM, const int PIN_CLAW) {
     ARM = PIN_ARM;
