@@ -11,16 +11,16 @@
 // Should switch to dynamic wifi provisioning so the auth token and wifi details aren't exposed.
 #define BLYNK_TEMPLATE_ID "TMPL6JE1H5lwL"
 #define BLYNK_TEMPLATE_NAME "Quickstart Template"
-#define BLYNK_AUTH_TOKEN "KiIvvlUmXWESGxuyc3LQHwKH6j8mQVj9"
+#define BLYNK_FIRMWARE_VERSION "0.1.0"
 
 // For debugging purposes.
+#define APP_DEBUG
 #define BLYNK_PRINT Serial
 
-#include <BlynkSimpleEsp32.h>
+// So Edgent knows what board to use. (might change later)
+#define USE_ESP32_DEV_MODULE
 
-// Wifi details.
-#define WIFI_SSID "CHANGE ME"
-#define WIFI_PASS "CHANGE ME"
+#include "BlynkEdgent.h"
 
 // Change as necessary.
 Motor leftMotor(22, 5, 18);
@@ -38,9 +38,9 @@ void setup() {
     ESP32PWM::allocateTimer(2);
     ESP32PWM::allocateTimer(3);
 
-    Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASS);
+    BlynkEdgent.begin();
 }
 
 void loop() {
-
+    BlynkEdgent.run();
 }
