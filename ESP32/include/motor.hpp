@@ -1,6 +1,7 @@
 #ifndef MOTOR_HPP
 #define MOTOR_HPP
 
+// Class representing a motor driven with a LM298N chip.
 class Motor {
     private:
         int PWM;
