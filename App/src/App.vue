@@ -2,16 +2,26 @@
 import { inject } from 'vue'
 
 const axios: any = inject('axios');
+axios.defaults.baseURL = "http://esp32.local";
 
+function getRawOutput(): void {
+    axios.get("/output/raw")
+        .then((response : any) => {
+
+        })
+        .error((error : any) => {
+
+        });
+}
 </script>
 
 <template>
     <div id="img-output-container">
         <div class="img-container">
-            <img src="/src/assets/icon.png" alt="raw image output" />
+            <img src="http://esp32.local/output/raw" alt="raw image output" />
         </div>
         <div class="img-container">
-            <img src="/src/assets/icon.png" alt="marked image output" />
+            <img src="http://esp32.local/output/marked" alt="marked image output" />
         </div>
     </div>
     <div id="user-container">

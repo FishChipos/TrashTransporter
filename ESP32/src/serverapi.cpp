@@ -2,7 +2,7 @@
 
 /*
 The WebServer library expects type THandlerFunction (which itself is std::function<void()>) for request handlers.
-To remove the implicit `this` argument from class member functions, they are bound to the object instance.
+To remove the implicit `this` argument from class member functions, it is bound to the object instance.
 */
 #define WRAP_REQ_HANDLER(func) WebServer::THandlerFunction(std::bind(func, this))
 
@@ -12,6 +12,7 @@ ServerAPI::ServerAPI(const int port) {
     // Register API request handlers.
     webServer->on("/", HTTP_GET, WRAP_REQ_HANDLER(&ServerAPI::getRoot));
     webServer->on("/output/raw", HTTP_GET, WRAP_REQ_HANDLER(&ServerAPI::getOutputRaw));
+    webServer->on("/output/marked", HTTP_GET, WRAP_REQ_HANDLER(&ServerAPI::getOutputMarked));
     webServer->onNotFound(WRAP_REQ_HANDLER(&ServerAPI::notFound));
 }
 
