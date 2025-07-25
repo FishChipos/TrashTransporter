@@ -1,23 +1,28 @@
 #include <Arduino.h>
 
+#include <SerialTransfer.h>
 #include <esp_camera.h>
 
-const int CAM_PIN_PWDN = 0;
-const int CAM_PIN_RESET = 0;
+// Change as necessary.
+const int PIN_TX = 14;
+const int PIN_RX = 16;
+
+const int CAM_PIN_PWDN = 32;
+const int CAM_PIN_RESET = -1;
 const int CAM_PIN_XCLK = 0;
-const int CAM_PIN_SIOD = 0;
-const int CAM_PIN_SIOC = 0;
-const int CAM_PIN_D7 = 0;
-const int CAM_PIN_D6 = 0;
-const int CAM_PIN_D5 = 0;
-const int CAM_PIN_D4 = 0;
-const int CAM_PIN_D3 = 0;
-const int CAM_PIN_D2 = 0;
-const int CAM_PIN_D1 = 0;
-const int CAM_PIN_D0 = 0;
-const int CAM_PIN_VSYNC = 0;
-const int CAM_PIN_HREF = 0;
-const int CAM_PIN_PCLK = 0;
+const int CAM_PIN_SIOD = 26;
+const int CAM_PIN_SIOC = 27;
+const int CAM_PIN_D7 = 35;
+const int CAM_PIN_D6 = 34;
+const int CAM_PIN_D5 = 39;
+const int CAM_PIN_D4 = 36;
+const int CAM_PIN_D3 = 21;
+const int CAM_PIN_D2 = 19;
+const int CAM_PIN_D1 = 18;
+const int CAM_PIN_D0 = 5;
+const int CAM_PIN_VSYNC = 25;
+const int CAM_PIN_HREF = 23;
+const int CAM_PIN_PCLK = 22;
 
 constexpr camera_config_t cameraConfig = {
     CAM_PIN_PWDN,
@@ -47,8 +52,16 @@ constexpr camera_config_t cameraConfig = {
     CAMERA_GRAB_WHEN_EMPTY
 };
 
+SerialTransfer serial1Transfer;
+
 void setup() {
+    // Serial for logging to PC.
     Serial.begin(115200);
+
+    // Serial to communicate with the main ESP32 controller.
+    Serial1.begin(115200, SERIAL_8N1, PIN_RX, PIN_TX);
+    serial1Transfer.begin(Serial1);
+
     delay(200);
 
     // Initialize the camera.
@@ -65,6 +78,27 @@ void loop() {
     Serial.print(F("Took a picture! It's length was "));
     Serial.print(pic->len);
     Serial.println(F(" bytes."));
+
+    Serial.println(F("Attempting to transmit image data over serial..."));
+
+    // Reserving two bytes here means that the maximum file index is 2^16 or 65536.
+    // This means the maximum file size is 65 KB.
+    int numPackets = pic->len / (MAX_PACKET_SIZE - 2);
+    if (pic->len % MAX_PACKET_SIZE) ++numPackets;
+
+    for (int packet = 0; packet < numPackets; ++packet) {
+        int dataLength = MAX_PACKET_SIZE - 2;
+        int fileIndex = packet * dataLength;
+
+        if (fileIndex + dataLength > pic->len) {
+            dataLength = pic->len - fileIndex;
+        }
+
+        int sendSize = serial1Transfer.txObj(fileIndex);
+        sendSize = serial1Transfer.txObj(pic->buf[fileIndex], sendSize, dataLength);
+        serial1Transfer.sendData(sendSize, 1);
+    }
+
     esp_camera_fb_return(pic);
 
     delay(1000);
