@@ -12,8 +12,8 @@
 #include "serverapi.hpp"
 
 // Wifi details.
-#define WIFI_SSID "CHANGE ME"
-#define WIFI_PASS "CHANGE ME"
+#define WIFI_SSID "HASDI2"
+#define WIFI_PASS "CRV198573"
 
 const int PIN_CAM_TX = 0;
 const int PIN_CAM_RX = 0;
@@ -78,15 +78,18 @@ void setup() {
 
     server.begin();
     Serial.println("HTTP server started.");
+
+    Serial.println("Further logs can be accessed from the webserver.");
+
+    server.log("Log test.");
 }
 
 void loop() {
     server.handleClient();
 
-    There is no way this works.
-    if (camSerialTransfer.available()) {
-        if (camSerialTransfer.currentPacketID() == 1) {
-            receiveSize = camSerialTransfer.rxObj(rxBuffer, receiveSize, 320 * 240);
-        }
-    }
+    // if (camSerialTransfer.available()) {
+    //     if (camSerialTransfer.currentPacketID() == 1) {
+    //         receiveSize = camSerialTransfer.rxObj(rxBuffer, receiveSize, 320 * 240);
+    //     }
+    // }
 }

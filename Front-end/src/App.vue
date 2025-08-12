@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { inject } from 'vue'
+import { inject, ref } from 'vue'
 
 const axios: any = inject('axios');
 axios.defaults.baseURL = "http://esp32.local";
 
-function getRawOutput(): void {
-    axios.get("/output/raw")
-        .then((response : any) => {
+const logs = ref("");
 
-        })
-        .error((error : any) => {
+function readFromServer() {
+    axios.get("/logs")
+    .then((response: any) => {
+        for (const log of response.data.logs) {
+            logs.value += `[${log.timestamp.hours}:${log.timestamp.minutes}:${log.timestamp.seconds}] `;
+            logs.value += log.content;
 
-        });
+            logs.value += "\n";
+        }
+    })
 }
+
+setInterval(readFromServer, 1000);
+
 </script>
 
 <template>
@@ -31,28 +38,53 @@ function getRawOutput(): void {
         <div id="control-container">
 
         </div>
-        <div id="output-container">
-
+        <div id="logs-container">
+            <pre>{{ logs }}</pre>
         </div>
     </div>
 </template>
 
 <style scoped>
+/* Excuse the horrendous CSS. */
 #img-output-container {
     display: flex;
-    
-    justify-content: space-evenly;
 
-    max-height: 50vh;
+    height: 50%;
+
+    outline: 1px solid gray;
+}
+
+.img-container {
+    width: 100%;
+}
+
+.img-container:not(:last-child) {
+    outline: 1px solid gray;
 }
 
 .img-container > img {
-    max-height: 50vh;
+    object-fit: contain;
 }
 
 #user-container {
     display: flex;
 
-    max-height: 50vh;
+    height: 50%;
+
+    outline: 1px solid gray;
+
+}
+
+#user-container > div {
+    flex-grow: 1;
+    flex-basis: 0;
+
+    outline: 1px solid gray;
+    padding: 1rem;
+}
+
+#logs-container {
+    overflow-y: scroll;
+
 }
 </style>
