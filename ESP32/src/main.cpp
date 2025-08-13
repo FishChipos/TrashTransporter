@@ -39,6 +39,9 @@ int receiveSize = 0;
 SoftwareSerial gpsSoftwareSerial(PIN_GPS_RX, PIN_GPS_TX);
 TinyGPSPlus gps;
 
+unsigned long millisPrev;
+unsigned long millisNow;
+
 void setup() {
     // Helps with timer stability when controlling servos.
     ESP32PWM::allocateTimer(0);
@@ -82,10 +85,19 @@ void setup() {
     Serial.println("Further logs can be accessed from the webserver.");
 
     server.log("Log test.");
+
+    millisPrev = millis();
 }
 
 void loop() {
+    millisNow = millis();
+
     server.handleClient();
+
+    if (millisNow - millisPrev >= 2000) {
+        server.log("Log test.");
+        millisPrev = millisNow;
+    }
 
     // if (camSerialTransfer.available()) {
     //     if (camSerialTransfer.currentPacketID() == 1) {

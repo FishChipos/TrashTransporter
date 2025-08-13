@@ -1,21 +1,43 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue'
+import type { Axios, AxiosError, AxiosResponse } from 'axios';
+import type { Reactive, Ref } from 'vue';
+import { inject, reactive, ref } from 'vue';
 
-const axios: any = inject('axios');
+type LogTimestamp = {
+    hours: number;
+    minutes: number;
+    seconds: number;
+};
+
+type Log = {
+    timestamp: LogTimestamp;
+    content: string;
+};
+
+const axios: Axios = inject('axios')!;
 axios.defaults.baseURL = "http://esp32.local";
+axios.defaults.withCredentials = false;
 
-const logs = ref("");
+let isLogsAccessible: Ref<boolean> = ref(false);
 
-function readFromServer() {
-    axios.get("/logs")
-    .then((response: any) => {
-        for (const log of response.data.logs) {
-            logs.value += `[${log.timestamp.hours}:${log.timestamp.minutes}:${log.timestamp.seconds}] `;
-            logs.value += log.content;
+const logs: Reactive<Log[]> = reactive([]);
+let logCount: number = 0;
 
-            logs.value += "\n";
+function readFromServer(): void {
+    // Get logs.
+    axios.get("/logs", {
+        timeout: 5000,
+    })
+    .then((response: AxiosResponse) => {
+        isLogsAccessible.value = true;
+        for (let log = logCount; log < response.data.count; log++) {
+            logs.push(response.data.logs[log]);
+            logCount = log + 1;
         }
     })
+    .catch((error: AxiosError) => {
+        isLogsAccessible.value = false;
+    });
 }
 
 setInterval(readFromServer, 1000);
@@ -39,7 +61,16 @@ setInterval(readFromServer, 1000);
 
         </div>
         <div id="logs-container">
-            <pre>{{ logs }}</pre>
+            <template v-if="isLogsAccessible">
+                <span><b>LOGS</b></span>
+                <br/>
+                <!-- Lord almighty forgive me for this sin -->
+                <span v-for="log in logs">
+                    [{{ log.timestamp.hours <= 9 ? "0" + log.timestamp.hours : log.timestamp.hours }}:{{ log.timestamp.minutes <= 9 ? "0" + log.timestamp.minutes : log.timestamp.minutes}}:{{ log.timestamp.seconds <= 9 ? "0" + log.timestamp.seconds : log.timestamp.seconds }}] {{ log.content }}
+                    <br/>
+                </span>
+            </template>
+            <template v-else><b>ESP32 LOGS INNACCESSIBLE</b></template>
         </div>
     </div>
 </template>
@@ -49,13 +80,20 @@ setInterval(readFromServer, 1000);
 #img-output-container {
     display: flex;
 
+    flex-direction: row;
+
     height: 50%;
 
     outline: 1px solid gray;
 }
 
 .img-container {
-    width: 100%;
+    flex-grow: 1;
+    flex-basis: 0;
+
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 .img-container:not(:last-child) {
@@ -64,15 +102,17 @@ setInterval(readFromServer, 1000);
 
 .img-container > img {
     object-fit: contain;
+    margin: auto;
 }
 
 #user-container {
     display: flex;
 
+    flex-direction: row;
+
     height: 50%;
 
     outline: 1px solid gray;
-
 }
 
 #user-container > div {
@@ -81,10 +121,12 @@ setInterval(readFromServer, 1000);
 
     outline: 1px solid gray;
     padding: 1rem;
+
+    height: auto;
 }
 
 #logs-container {
     overflow-y: scroll;
-
+    word-break: break-all;
 }
 </style>
