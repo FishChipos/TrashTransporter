@@ -3,22 +3,17 @@ import type { Axios, AxiosError, AxiosResponse } from 'axios';
 import type { Reactive, Ref } from 'vue';
 import { inject, reactive, ref } from 'vue';
 
-type LogTimestamp = {
-    hours: number;
-    minutes: number;
-    seconds: number;
-};
+import type { Log } from './components/LogItem.vue';
+import LogItem from './components/LogItem.vue';
 
-type Log = {
-    timestamp: LogTimestamp;
-    content: string;
-};
+import Container from './components/Container.vue';
 
 const axios: Axios = inject('axios')!;
 axios.defaults.baseURL = "http://esp32.local";
 axios.defaults.withCredentials = false;
 
 let isLogsAccessible: Ref<boolean> = ref(false);
+let isManualControl: Ref<boolean> = ref(false);
 
 const logs: Reactive<Log[]> = reactive([]);
 let logCount: number = 0;
@@ -35,12 +30,16 @@ function readFromServer(): void {
             logCount = log + 1;
         }
     })
-    .catch((error: AxiosError) => {
+    .catch((_error: AxiosError) => {
         isLogsAccessible.value = false;
     });
 }
 
 setInterval(readFromServer, 1000);
+
+function toggleManualControl(): void {
+    isManualControl.value = !isManualControl.value;
+}
 
 </script>
 
@@ -54,24 +53,31 @@ setInterval(readFromServer, 1000);
         </div>
     </div>
     <div id="user-container">
-        <div id="settings-container">
-
-        </div>
-        <div id="control-container">
-
-        </div>
-        <div id="logs-container">
-            <template v-if="isLogsAccessible">
-                <span><b>LOGS</b></span>
-                <br/>
-                <!-- Lord almighty forgive me for this sin -->
-                <span v-for="log in logs">
-                    [{{ log.timestamp.hours <= 9 ? "0" + log.timestamp.hours : log.timestamp.hours }}:{{ log.timestamp.minutes <= 9 ? "0" + log.timestamp.minutes : log.timestamp.minutes}}:{{ log.timestamp.seconds <= 9 ? "0" + log.timestamp.seconds : log.timestamp.seconds }}] {{ log.content }}
-                    <br/>
-                </span>
+        <Container>
+            <template v-slot:title>SETTINGS</template>
+            <template v-slot:body>
+                <input type="checkbox" @click="toggleManualControl()">Manual Control</input>
             </template>
-            <template v-else><b>ESP32 LOGS INNACCESSIBLE</b></template>
-        </div>
+        </Container>
+        <Container>
+
+        </Container>
+        <Container :scrollable="true">
+            <template v-slot:title>
+                <template v-if="isLogsAccessible">
+                    LOGS
+                </template>
+                <template v-else>
+                    LOGS NOT ACCESSIBLE
+                </template>
+            </template>
+            <template v-slot:body v-if="isLogsAccessible">
+                <LogItem
+                    v-for="log in logs"
+                    :log="log"
+                />
+            </template>
+        </Container>
     </div>
 </template>
 
@@ -120,7 +126,6 @@ setInterval(readFromServer, 1000);
     flex-basis: 0;
 
     outline: 1px solid gray;
-    padding: 1rem;
 
     height: auto;
 }

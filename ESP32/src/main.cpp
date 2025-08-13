@@ -98,10 +98,4 @@ void loop() {
         server.log("Log test.");
         millisPrev = millisNow;
     }
-
-    // if (camSerialTransfer.available()) {
-    //     if (camSerialTransfer.currentPacketID() == 1) {
-    //         receiveSize = camSerialTransfer.rxObj(rxBuffer, receiveSize, 320 * 240);
-    //     }
-    // }
 }
