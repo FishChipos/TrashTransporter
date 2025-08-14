@@ -8,15 +8,17 @@ import LogItem from './components/LogItem.vue';
 
 import Container from './components/Container.vue';
 
+// Set up the Axios HTTP handler.
 const axios: Axios = inject('axios')!;
 axios.defaults.baseURL = "http://esp32.local";
 axios.defaults.withCredentials = false;
 
+// Flags.
 let isLogsAccessible: Ref<boolean> = ref(false);
 let isManualControl: Ref<boolean> = ref(false);
 
+// Internal list of logs received from the webserver.
 const logs: Reactive<Log[]> = reactive([]);
-let logCount: number = 0;
 
 function readFromServer(): void {
     // Get logs.
@@ -24,18 +26,24 @@ function readFromServer(): void {
         timeout: 5000,
     })
     .then((response: AxiosResponse) => {
+        clearInterval(readFromServerInterval);
+        readFromServerInterval = setInterval(readFromServer, 1000);
+
         isLogsAccessible.value = true;
-        for (let log = logCount; log < response.data.count; log++) {
+        for (let log = logs.length; log < response.data.count; log++) {
             logs.push(response.data.logs[log]);
-            logCount = log + 1;
         }
     })
     .catch((_error: AxiosError) => {
+        // Have longer pings when errors happen.
+        clearInterval(readFromServerInterval);
+        readFromServerInterval = setInterval(readFromServer, 5000);
+
         isLogsAccessible.value = false;
     });
 }
 
-setInterval(readFromServer, 1000);
+let readFromServerInterval = setInterval(readFromServer, 1000);
 
 function toggleManualControl(): void {
     isManualControl.value = !isManualControl.value;
@@ -44,94 +52,106 @@ function toggleManualControl(): void {
 </script>
 
 <template>
-    <div id="img-output-container">
-        <div class="img-container">
-            <img src="http://esp32.local/output/raw" alt="raw image output" />
+    <div id="root-container">
+        <div id="top-wrapper">
+            <Container class="container" :no-padding="true">
+                <template v-slot:title>MAP</template>
+            </Container>
+            <div class="vertical-separator"/>
+            <Container class="container" :no-padding="true">
+                <template v-slot:title>MARKED IMAGE OUTPUT</template>
+            </Container>
         </div>
-        <div class="img-container">
-            <img src="http://esp32.local/output/marked" alt="marked image output" />
-        </div>
-    </div>
-    <div id="user-container">
-        <Container>
-            <template v-slot:title>SETTINGS</template>
-            <template v-slot:body>
-                <input type="checkbox" @click="toggleManualControl()">Manual Control</input>
-            </template>
-        </Container>
-        <Container>
+        <div class="horizontal-separator"/>
+        <div id="bottom-wrapper">
+            <Container class="container">
+                <template v-slot:title>SETTINGS</template>
+                <template v-slot:body>
+                    <label>
+                        <input type="checkbox" @click="toggleManualControl()"/>
+                        Manual Control
+                    </label>
+                </template>
+            </Container>
+            <div class="vertical-separator"/>
+            <Container class="container">
 
-        </Container>
-        <Container :scrollable="true">
-            <template v-slot:title>
-                <template v-if="isLogsAccessible">
-                    LOGS
+            </Container>
+            <div class="vertical-separator"/>
+            <Container class="container" :scrollable="true">
+                <template v-slot:title>
+                    <template v-if="isLogsAccessible">
+                        LOGS
+                    </template>
+                    <template v-else>
+                        LOGS NOT ACCESSIBLE
+                    </template>
                 </template>
-                <template v-else>
-                    LOGS NOT ACCESSIBLE
+                <template v-slot:body>
+                    <template v-if="isLogsAccessible">
+                        <LogItem
+                            v-for="log in logs"
+                            :log="log"
+                        />
+                    </template>
+                    <template v-else>
+                        Common causes:
+                        <ul>
+                            <li>The webserver is inactive.</li>
+                            <li>The webserver is not on the same network as this device.</li>
+                            <li>Poor network conditions.</li>
+                        </ul>
+                    </template>
                 </template>
-            </template>
-            <template v-slot:body v-if="isLogsAccessible">
-                <LogItem
-                    v-for="log in logs"
-                    :log="log"
-                />
-            </template>
-        </Container>
+            </Container>
+        </div>
     </div>
 </template>
 
 <style scoped>
-/* Excuse the horrendous CSS. */
-#img-output-container {
-    display: flex;
-
-    flex-direction: row;
-
-    height: 50%;
-
-    outline: 1px solid gray;
+ul {
+    margin: 0;
+    padding-left: 20px;
 }
 
-.img-container {
+.vertical-separator {
+    height: 100%;
+    border-right: 2px solid var(--main-color);
+}
+
+.horizontal-separator {
+    width: 100%;
+    border-bottom: 2px solid var(--main-color);
+}
+
+.container {
     flex-grow: 1;
     flex-basis: 0;
-
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.img-container:not(:last-child) {
-    outline: 1px solid gray;
-}
-
-.img-container > img {
-    object-fit: contain;
-    margin: auto;
-}
-
-#user-container {
-    display: flex;
-
-    flex-direction: row;
-
-    height: 50%;
-
-    outline: 1px solid gray;
-}
-
-#user-container > div {
-    flex-grow: 1;
-    flex-basis: 0;
-
-    outline: 1px solid gray;
 
     height: auto;
 }
 
-#logs-container {
-    overflow-y: scroll;
-    word-break: break-all;
+#root-container {
+    width: 100%;
+    height: 100%;
+
+    outline: 2px solid var(--main-color);
 }
+
+#top-wrapper {
+    display: flex;
+
+    flex-direction: row;
+
+    height: 50%;
+}
+
+#bottom-wrapper {
+    display: flex;
+
+    flex-direction: row;
+
+    height: 50%;
+}
+
 </style>
