@@ -52,7 +52,12 @@ function move(direction: string, state: boolean) {
         >
             LEFT
         </button>
-        <div/>
+        <button :disabled="isDisabled"
+            @mousedown.left="move('brake', true)"
+            @mouseup.left="move('brake', false)"
+        >
+            BRAKE
+        </button>
         <button :disabled="isDisabled"
             @mousedown.left="move('right', true)" 
             @mouseup.left="move('right', false)"
@@ -72,13 +77,13 @@ function move(direction: string, state: boolean) {
 
 <style scoped>
 #d-pad-container {
+    width: 100%;
     height: 100%;
-    aspect-ratio: 1 / 1;
 
     display: grid;
 
-    grid-template-columns: 33% 33% 33%;
-    grid-template-rows: 33% 33% 33%;
+    gap: 0.5rem;
+    grid: 1fr 1fr 1fr / 1fr 1fr 1fr;
 
     font-size: 12px;
 }
@@ -86,9 +91,11 @@ function move(direction: string, state: boolean) {
 button {
     width: 100%;
     height: 100%;
+
     transition: border-color 0.2s;
 
-    overflow: clip;
+    overflow: hidden;
+    word-break: keep-all;
 }
 
 button:hover:enabled {
