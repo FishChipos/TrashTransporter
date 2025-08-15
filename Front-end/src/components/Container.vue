@@ -2,7 +2,7 @@
 import { useSlots } from 'vue';
 
 const props = defineProps<{
-    scrollable?: boolean,
+    isScrollable?: boolean,
     noPadding?: boolean,
 }>();
 
@@ -10,7 +10,7 @@ const slots = useSlots();
 
 const showTitle = !!slots["title"];
 
-const overflowY = props.scrollable ? "scroll" : "hidden";
+const overflowY = props.isScrollable ? "scroll" : "hidden";
 const padding = props.noPadding ? "0" : "1rem";
 </script>
 

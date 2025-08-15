@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import type { Axios, AxiosError, AxiosResponse } from 'axios';
 import type { Reactive, Ref } from 'vue';
 import { inject, reactive, ref } from 'vue';
+
+import type { Axios, AxiosError, AxiosResponse } from 'axios';
+
+import Container from './components/Container.vue';
 
 import type { Log } from './components/LogItem.vue';
 import LogItem from './components/LogItem.vue';
 
-import Container from './components/Container.vue';
+import Controller from './components/Controller.vue';
 
 // Set up the Axios HTTP handler.
 const axios: Axios = inject('axios')!;
@@ -67,7 +70,7 @@ function toggleManualControl(): void {
             <Container class="container">
                 <template v-slot:title>SETTINGS</template>
                 <template v-slot:body>
-                    <label>
+                    <label class="setting">
                         <input type="checkbox" @click="toggleManualControl()"/>
                         Manual Control
                     </label>
@@ -75,10 +78,14 @@ function toggleManualControl(): void {
             </Container>
             <div class="vertical-separator"/>
             <Container class="container">
-
+                <template v-slot:body>
+                    <Controller
+                        :isDisabled="!isManualControl"
+                    />
+                </template>
             </Container>
             <div class="vertical-separator"/>
-            <Container class="container" :scrollable="true">
+            <Container class="container" :isScrollable="true">
                 <template v-slot:title>
                     <template v-if="isLogsAccessible">
                         LOGS
@@ -129,6 +136,17 @@ ul {
     flex-basis: 0;
 
     height: auto;
+
+    
+}
+
+.setting, .setting input {
+    cursor: pointer;
+    user-select: none;
+}
+
+.setting:hover {
+    color: var(--accent-color);
 }
 
 #root-container {
