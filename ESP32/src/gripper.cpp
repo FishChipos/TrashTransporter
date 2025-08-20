@@ -3,10 +3,10 @@
 #include <Arduino.h>
 #include <ESP32Servo.h>
 
-Gripper::Gripper(const int PIN_ARM, const int PIN_CLAW) {
-    ARM = PIN_ARM;
-    CLAW = PIN_CLAW;
+Gripper::Gripper(const int armPin, const int clawPin) {
+    PIN_ARM = armPin;
+    PIN_CLAW = clawPin;
 
-    pinMode(ARM, OUTPUT);
-    pinMode(CLAW, OUTPUT);
+    pinMode(PIN_ARM, OUTPUT);
+    pinMode(PIN_CLAW, OUTPUT);
 }

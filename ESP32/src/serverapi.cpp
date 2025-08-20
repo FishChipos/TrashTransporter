@@ -15,6 +15,10 @@ inline bool ServerLog::operator==(ServerLog &other) {
     }
 }
 
+inline bool ServerLog::operator!=(ServerLog &other) {
+    return !(*this == other);
+}
+
 /*
 The WebServer library expects type THandlerFunction (which itself is std::function<void()>) for request handlers.
 To remove the implicit `this` argument from class member functions, it is bound to the object instance.

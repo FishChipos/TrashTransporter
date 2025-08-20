@@ -92,6 +92,8 @@ button {
     width: 100%;
     height: 100%;
 
+    border-radius: 0;
+
     transition: border-color 0.2s;
 
     overflow: hidden;

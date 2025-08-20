@@ -4,8 +4,8 @@
 // Class representing a basic gripper with one joint and a claw.
 class Gripper {
     private:
-        int ARM;
-        int CLAW;
+        int PIN_ARM;
+        int PIN_CLAW;
 
     public:
         // Initializes a Gripper instance.

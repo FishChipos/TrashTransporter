@@ -14,12 +14,13 @@ struct ServerLog {
     ServerLog(std::string userContent);
 
     inline bool operator==(ServerLog &other);
-    inline bool operator!=(ServerLog &other) {return !(*this == other);};
+    inline bool operator!=(ServerLog &other);
 };
 
 // Class representing a webserver and the APIs for it.
 class ServerAPI {
     private:
+        // I'm pretty sure this has to be a pointer because it binds a network port to it so the web server cannot be copied.
         WebServer *webServer;
 
         std::vector<ServerLog> logs;
