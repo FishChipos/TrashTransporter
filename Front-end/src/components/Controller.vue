@@ -15,8 +15,8 @@ const buttonReleaseSound = new Audio(buttonPressSoundURL);
 buttonPressSound.volume = 0.5;
 buttonReleaseSound.volume = 0.5;
 
-function move(direction: string, state: boolean) {
-    if (state) {
+function move(direction: string, on: boolean) {
+    if (on) {
         buttonPressSound.currentTime = 0.22;
         buttonPressSound.play();
     }
@@ -28,7 +28,7 @@ function move(direction: string, state: boolean) {
     axios.get("/controls/move", {
         params: {
             direction: direction,
-            state: state
+            on: on
         }
     })
     .catch((_error: AxiosError) => {});

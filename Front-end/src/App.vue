@@ -23,14 +23,13 @@ let isManualControl: Ref<boolean> = ref(false);
 // Internal list of logs received from the webserver.
 const logs: Reactive<Log[]> = reactive([]);
 
-function readFromServer(): void {
-    // Get logs.
+function getLogsFromServer(): void {
     axios.get("/logs", {
         timeout: 5000,
     })
     .then((response: AxiosResponse) => {
         clearInterval(readFromServerInterval);
-        readFromServerInterval = setInterval(readFromServer, 1000);
+        readFromServerInterval = setInterval(getLogsFromServer, 1000);
 
         isLogsAccessible.value = true;
         for (let log = logs.length; log < response.data.count; log++) {
@@ -40,16 +39,29 @@ function readFromServer(): void {
     .catch((_error: AxiosError) => {
         // Have longer pings when errors happen.
         clearInterval(readFromServerInterval);
-        readFromServerInterval = setInterval(readFromServer, 5000);
+        readFromServerInterval = setInterval(getLogsFromServer, 5000);
 
         isLogsAccessible.value = false;
     });
 }
 
-let readFromServerInterval = setInterval(readFromServer, 1000);
+let readFromServerInterval = setInterval(getLogsFromServer, 1000);
 
 function toggleManualControl(): void {
     isManualControl.value = !isManualControl.value;
+
+    axios.get("/settings/manualcontrol", {
+        timeout: 5000,
+        params: {
+            value: isManualControl.value
+        }
+    })
+    .then((_response: AxiosResponse) => {
+
+    })
+    .catch((_error: AxiosError) => {
+
+    });
 }
 
 </script>

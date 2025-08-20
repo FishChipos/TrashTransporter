@@ -32,7 +32,7 @@ Gripper frontGripper(13, 14);
 Gripper backGripper(15, 25);
 
 // Web server on port 80.
-ServerAPI server(80);
+APIServer server(80);
 
 TerrainMap terrainMap(PIN_GPS_RX, PIN_GPS_TX, 9600);
 
@@ -61,34 +61,35 @@ void setup() {
 
     delay(100);
 
-    Serial.print("Connecting to ");
-    Serial.print(WIFI_SSID);
+    Serial.print(F("Connecting to "));
+    Serial.print(F(WIFI_SSID));
 
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    WiFi.begin(F(WIFI_SSID), F(WIFI_PASS));
 
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
-        Serial.print(".");
+        Serial.print(F("."));
     }
 
-    Serial.println("");
-    Serial.println("Wifi connected.");
+    Serial.println(F(""));
+    Serial.println(F("Wifi connected."));
 
-    if (!MDNS.begin("esp32")) {
-        Serial.println("Error while setting up mDNS responder!");
+    if (!MDNS.begin(F("esp32"))) {
+        Serial.println(F("Error while setting up mDNS responder!"));
         while (1) {
             delay(1000);
         }
     }
 
-    Serial.println("mDNS responder started.");
+    Serial.println(F("mDNS responder started."));
 
+    server.enableLogging(true);
     server.begin();
-    Serial.println("HTTP server started.");
+    Serial.println(F("HTTP server started."));
 
-    Serial.println("Further logs can also be accessed from the webserver.");
+    Serial.println(F("Further logs can also be accessed from the webserver."));
 
-    server.log("Log test.");
+    server.log(F("Log test."));
 
     millisPrev = millis();
 
