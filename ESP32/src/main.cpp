@@ -9,7 +9,7 @@
 
 #include "motor.hpp"
 #include "gripper.hpp"
-#include "serverapi.hpp"
+#include "api.hpp"
 #include "terrainmap.hpp"
 
 // Wifi details.

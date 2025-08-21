@@ -1,4 +1,4 @@
-#include "serverapi.hpp"
+#include "api.hpp"
 
 // ServerLog implementations.
 ServerLog::ServerLog(String userContent) {
@@ -19,6 +19,7 @@ inline bool ServerLog::operator!=(ServerLog &other) {
     return !(*this == other);
 }
 
+// APIServer implementations.
 void APIServer::enableLogging(bool on) {
     isLoggingEnabled = on;
 }
@@ -164,7 +165,7 @@ void APIServer::getLogs() {
 
     responseBody += F("\n]\n}");
 
-    webServer->send(200, F("text/json"), responseBody.c_str());
+    webServer->send(200, F("text/json"), responseBody);
 }
 
 void APIServer::getOutputRaw() {
