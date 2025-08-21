@@ -1,5 +1,7 @@
 #include "api.hpp"
 
+#include <optional>
+
 // ServerLog implementations.
 ServerLog::ServerLog(String userContent) {
     timestamp = std::time(NULL);
@@ -28,7 +30,7 @@ void APIServer::registerAPIEndpoints() {
     if (isLoggingEnabled) Serial.println(F("Registering API endpoints..."));
 
     for (const APIEndpoint &endpoint : endpoints) {
-        webServer->on(endpoint.path.c_str(), endpoint.method, endpoint.handler);
+        webServer->on(endpoint.path.c_str(), endpoint.method, endpoint.requestHandler, endpoint.uploadHandler, endpoint.bodyHandler);
 
         if (isLoggingEnabled) {
             Serial.print(endpoint.path);
@@ -58,9 +60,9 @@ void APIServer::registerAPIEndpoints() {
             if (endpoint.parameters.size() > 0) {
                 Serial.println();
                 for (const APIEndpointParameter &parameter : endpoint.parameters) {
-                    Serial.print("    ");
+                    Serial.print("    [");
                     Serial.print(parameter.key);
-                    Serial.print(" ");
+                    Serial.print("] ");
                     Serial.print(parameter.description);
                     Serial.println();
                 }
@@ -77,7 +79,7 @@ APIServer::APIServer(const int port, Settings *userSettings) {
 
     webServer = new AsyncWebServer(port);
 
-    // Enable CORS to make the API accessible to other hosts.
+    // Add CORS middleware to make the API accessible to other hosts.
     webServer->addMiddleware(new AsyncCorsMiddleware());
 
     // Define API request handlers.
@@ -86,52 +88,60 @@ APIServer::APIServer(const int port, Settings *userSettings) {
     endpoints.push_back({
         F("/"), 
         HTTP_GET, 
+        F("Root path."),
         [this](AsyncWebServerRequest *request) {
             getRoot(request);
-        }, 
-        F("Root path.")
+        }
     });
     endpoints.push_back({
         F("/logs"), 
         HTTP_GET, 
+        F("Server logs."),
         [this](AsyncWebServerRequest *request) {
             getLogs(request);
-        }, 
-        F("Server logs.")
+        }
     });
     endpoints.push_back({
         F("/output/raw"), 
         HTTP_GET, 
+        F("Raw image output."),
         [this](AsyncWebServerRequest *request) {
             getOutputRaw(request);
-        }, 
-        F("Raw image output.")
+        }
     });
     endpoints.push_back({
         F("/output/marked"), 
         HTTP_GET, 
+        F("Marked image output."),
         [this](AsyncWebServerRequest *request) {
             getOutputMarked(request);
-        }, 
-        F("Marked image output.")
-    });
-    endpoints.push_back({
-        F("/settings/manualcontrol"),
-        HTTP_OPTIONS,
-        [this](AsyncWebServerRequest *request) {
-            request->send(204);
-        },
-        F("Query for CORS pre-flight requests.")
+        }
     });
     endpoints.push_back({
         F("/settings/manualcontrol"), 
         HTTP_PATCH, 
+        F("Set manual control for the robot."),
         [this](AsyncWebServerRequest *request) {
             setManualControl(request);
         },
-        F("Set manual control for the robot."),
+        nullptr,
+        nullptr,
         {
             {F("value"), F("Set to true for manual control, false otherwise.")}
+        }
+    });
+    endpoints.push_back({
+        F("/controls/move"),
+        HTTP_PATCH,
+        F("Move the robot."),
+        [this](AsyncWebServerRequest *request) {
+            move(request);
+        },
+        nullptr,
+        nullptr,
+        {
+            {F("direction"), F("Direction of the desired movement. Can be forward, back, left, right, or brake.")},
+            {F("on"), F("Whether to move in that direction.")}
         }
     });
 }
@@ -140,6 +150,25 @@ void APIServer::begin() {
     registerAPIEndpoints();
 
     webServer->begin();
+}
+
+// You better write your Booleans in lower case.
+static inline bool stringIsBool(String string) {
+    if (string == "true" || string == "false") {
+        return true;
+    }
+    return false;
+}
+
+static inline bool stringToBool(String string) {
+    if (string == "true") {
+        return true;
+    }
+    else if (string == "false") {
+        return false;
+    }
+
+    return {};
 }
 
 void APIServer::getRoot(AsyncWebServerRequest *request) {
@@ -189,28 +218,33 @@ void APIServer::getOutputMarked(AsyncWebServerRequest *request) {
 }
 
 void APIServer::setManualControl(AsyncWebServerRequest *request) {
-    String value = "";
+    // No error checking because we ball.
+    const AsyncWebParameter *value = request->getParam(F("value"));
 
+    settings->manualControl = stringToBool(value->value());
+    log(String("Set manual control to ") + value->value() + String("."));
+    request->send(204);
+}
 
-    if (value == "true") {
-        settings->manualControl = true;
-        log("Manual control set to true.");
+void APIServer::move(AsyncWebServerRequest *request) {
+    // No error checking either except maybe for overlapping inputs.
+    const AsyncWebParameter *direction = request->getParam(F("direction"));
+    const AsyncWebParameter *on = request->getParam(F("on"));
 
-        request->send(204);
+    if (direction->value() == "forward") {
+        log(String("Set forward movement to ") + on->value() + String("."));
     }
-    else if (value == "false") {
-        settings->manualControl = false;
-        log("Manual control set to false.");
-
-        request->send(204);
+    else if (direction->value() == "back") {
+        log(String("Set back movement to ") + on->value() + String("."));
     }
-    // Argument not found or malformed request.
-    else {
-        settings->manualControl = true;
-        log("Error when handling request to set manual control, defaulting to manual control.");
-
-        request->send(204);
+    else if (direction->value() == "left") {
+        log(String("Set left movement to ") + on->value() + String("."));
     }
+    else if (direction->value() == "right") {
+        log(String("Set right movement to ") + on->value() + String("."));
+    }
+
+    request->send(204);
 }
 
 void APIServer::notFound(AsyncWebServerRequest *request) {

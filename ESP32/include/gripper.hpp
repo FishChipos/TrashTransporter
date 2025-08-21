@@ -3,7 +3,7 @@
 
 // Class representing a basic gripper with one joint and a claw.
 class Gripper {
-    private:
+    protected:
         int PIN_ARM;
         int PIN_CLAW;
 

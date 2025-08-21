@@ -3,7 +3,7 @@
 
 // Class representing a motor driven with a LM298N chip.
 class Motor {
-    private:
+    protected:
         int PIN_PWM;
         int PIN_IN1;
         int PIN_IN2;

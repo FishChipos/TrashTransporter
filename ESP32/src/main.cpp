@@ -86,12 +86,12 @@ void setup() {
         }
     }
 
-    Serial.println(F("mDNS responder started."));
+    Serial.println(F("mDNS responder started for host: http://esp32.local"));
 
     // Set up the HTTP web server.
     server.enableLogging(true);
     server.begin();
-    Serial.println(F("HTTP server started."));
+    Serial.println(F("HTTP server started on port 80."));
 
     Serial.println(F("Further logs can also be accessed from the webserver."));
 

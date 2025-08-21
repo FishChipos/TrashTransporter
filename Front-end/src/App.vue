@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { Reactive, Ref } from 'vue';
-import { inject, reactive, ref } from 'vue';
+import type { Ref } from 'vue';
+import { inject, ref } from 'vue';
 
 import type { Axios, AxiosError, AxiosResponse } from 'axios';
 
@@ -21,7 +21,7 @@ let isLogsAccessible: Ref<boolean> = ref(false);
 let isManualControl: Ref<boolean> = ref(false);
 
 // Internal list of logs received from the webserver.
-const logs: Reactive<Log[]> = reactive([]);
+const logs: Ref<Log[]> = ref([]);
 
 function getLogsFromServer(): void {
     axios.get("/logs", {
@@ -32,8 +32,12 @@ function getLogsFromServer(): void {
         readFromServerInterval = setInterval(getLogsFromServer, 1000);
 
         isLogsAccessible.value = true;
-        for (let log = logs.length; log < response.data.count; log++) {
-            logs.push(response.data.logs[log]);
+        if (logs.value.length > response.data.count) {
+            logs.value = [];
+        }
+
+        for (let log = logs.value.length; log < response.data.count; log++) {
+            logs.value.push(response.data.logs[log]);
         }
     })
     .catch((_error: AxiosError) => {
@@ -50,9 +54,9 @@ let readFromServerInterval = setInterval(getLogsFromServer, 1000);
 function toggleManualControl(): void {
     isManualControl.value = !isManualControl.value;
 
-    axios.patch("/settings/manualcontrol", {
+    axios.patch("/settings/manualcontrol", {}, {
         timeout: 5000,
-        data: {
+        params: {
             value: isManualControl.value
         }
     })

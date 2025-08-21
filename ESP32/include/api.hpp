@@ -29,9 +29,11 @@ struct APIEndpointParameter {
 struct APIEndpoint {
     String path;
     WebRequestMethod method;
-    ArRequestHandlerFunction handler;
     // For logging purposes.
     String description;
+    ArRequestHandlerFunction requestHandler;
+    ArUploadHandlerFunction uploadHandler;
+    ArBodyHandlerFunction bodyHandler;
 
     // List of parameters for logging purposes.
     std::vector<APIEndpointParameter> parameters;
@@ -39,7 +41,7 @@ struct APIEndpoint {
 
 // Class representing a webserver and the APIs for it.
 class APIServer {
-    private:
+    protected:
         // I'm pretty sure this has to be a pointer because it binds a network port to it so the web server cannot be copied.
         AsyncWebServer *webServer;
         Settings *settings;
@@ -55,7 +57,11 @@ class APIServer {
         void getLogs(AsyncWebServerRequest *request);
         void getOutputRaw(AsyncWebServerRequest *request);
         void getOutputMarked(AsyncWebServerRequest *request);
+
         void setManualControl(AsyncWebServerRequest *request);
+
+        void move(AsyncWebServerRequest *request);
+
         void notFound(AsyncWebServerRequest *request);
 
     public:

@@ -25,7 +25,7 @@ function move(direction: string, on: boolean) {
         buttonReleaseSound.play();
     }
 
-    axios.get("/controls/move", {
+    axios.patch("/controls/move", {}, {
         params: {
             direction: direction,
             on: on

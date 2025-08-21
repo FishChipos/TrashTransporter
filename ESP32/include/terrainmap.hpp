@@ -5,7 +5,7 @@
 #include <TinyGPSPlus.h>
 
 class TerrainMap {
-    private:
+    protected:
         SoftwareSerial *gpsSS;
         TinyGPSPlus *gps;
 

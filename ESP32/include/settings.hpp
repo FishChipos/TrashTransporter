@@ -2,7 +2,7 @@
 #define SETTINGS_HPP
 
 struct Settings {
-    bool manualControl = false;
+    bool manualControl = true;
 };
 
 #endif
