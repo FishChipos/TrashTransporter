@@ -6,7 +6,10 @@
 #include <SerialTransfer.h> // Handle transfer from ESP32-CAM.
 #include <SoftwareSerial.h> // Handle serial from GPS.
 #include <TinyGPSPlus.h> // Handle GPS data.
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
+#include "settings.hpp"
 #include "motor.hpp"
 #include "gripper.hpp"
 #include "api.hpp"
@@ -24,6 +27,8 @@ const int PIN_GPS_GND = 27;
 const int PIN_GPS_RX = 16;
 const int PIN_GPS_TX = 17;
 
+Settings settings;
+
 // Change as necessary.
 Motor leftMotor(22, 5, 18);
 Motor rightMotor(23, 19, 21);
@@ -32,7 +37,7 @@ Gripper frontGripper(13, 14);
 Gripper backGripper(15, 25);
 
 // Web server on port 80.
-APIServer server(80);
+APIServer server(80, &settings);
 
 TerrainMap terrainMap(PIN_GPS_RX, PIN_GPS_TX, 9600);
 
@@ -52,15 +57,14 @@ void setup() {
     ESP32PWM::allocateTimer(3);
 
     Serial.begin(115200);
+
+    // Camera serial transfer code so I don't forget.
     // Serial1.begin(115200, SERIAL_8N1, PIN_CAM_RX, PIN_CAM_TX);
     // camSerialTransfer.begin(Serial1);
-    pinMode(PIN_GPS_VCC, OUTPUT);
-    pinMode(PIN_GPS_GND, OUTPUT);
-    digitalWrite(PIN_GPS_VCC, HIGH);
-    digitalWrite(PIN_GPS_GND, LOW);
 
     delay(100);
 
+    // Connect to wifi.
     Serial.print(F("Connecting to "));
     Serial.print(F(WIFI_SSID));
 
@@ -74,6 +78,7 @@ void setup() {
     Serial.println(F(""));
     Serial.println(F("Wifi connected."));
 
+    // Set up mDNS for http://esp32.local
     if (!MDNS.begin(F("esp32"))) {
         Serial.println(F("Error while setting up mDNS responder!"));
         while (1) {
@@ -83,6 +88,7 @@ void setup() {
 
     Serial.println(F("mDNS responder started."));
 
+    // Set up the HTTP web server.
     server.enableLogging(true);
     server.begin();
     Serial.println(F("HTTP server started."));
@@ -93,18 +99,11 @@ void setup() {
 
     millisPrev = millis();
 
-    terrainMap.begin();
+    // terrainMap.begin();
 }
 
 void loop() {
     millisNow = millis();
 
-    server.handleClient();
-    terrainMap.update();
-
-    if (millisNow - millisPrev >= 2000) {
-        // server.log(std::string("Latitude: ") + std::to_string(terrainMap.getCurrentLatitude()));
-        // server.log(std::string("Longitude: ") + std::to_string(terrainMap.getCurrentLongitude()));
-        millisPrev = millisNow;
-    }
+    // terrainMap.update();
 }

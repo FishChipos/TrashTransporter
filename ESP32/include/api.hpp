@@ -5,7 +5,10 @@
 #include <string>
 #include <vector>
 
-#include <WebServer.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
+#include "settings.hpp"
 
 struct ServerLog {
     std::time_t timestamp;
@@ -25,8 +28,8 @@ struct APIEndpointParameter {
 
 struct APIEndpoint {
     String path;
-    HTTPMethod method;
-    WebServer::THandlerFunction handler;
+    WebRequestMethod method;
+    ArRequestHandlerFunction handler;
     // For logging purposes.
     String description;
 
@@ -38,7 +41,8 @@ struct APIEndpoint {
 class APIServer {
     private:
         // I'm pretty sure this has to be a pointer because it binds a network port to it so the web server cannot be copied.
-        WebServer *webServer;
+        AsyncWebServer *webServer;
+        Settings *settings;
 
         bool isLoggingEnabled;
 
@@ -47,20 +51,19 @@ class APIServer {
         std::vector<ServerLog> logs;
         
         void registerAPIEndpoints();
-        void getRoot();
-        void getLogs();
-        void getOutputRaw();
-        void getOutputMarked();
-        void setManualControl();
-        void notFound();
+        void getRoot(AsyncWebServerRequest *request);
+        void getLogs(AsyncWebServerRequest *request);
+        void getOutputRaw(AsyncWebServerRequest *request);
+        void getOutputMarked(AsyncWebServerRequest *request);
+        void setManualControl(AsyncWebServerRequest *request);
+        void notFound(AsyncWebServerRequest *request);
 
     public:
-        APIServer(const int port);
+        APIServer(const int port, Settings *userSettings);
 
         void enableLogging(bool on);
 
         void begin();
-        void handleClient();
 
         void log(String content);
 };

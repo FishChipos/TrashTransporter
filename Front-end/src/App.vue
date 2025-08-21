@@ -50,9 +50,9 @@ let readFromServerInterval = setInterval(getLogsFromServer, 1000);
 function toggleManualControl(): void {
     isManualControl.value = !isManualControl.value;
 
-    axios.get("/settings/manualcontrol", {
+    axios.patch("/settings/manualcontrol", {
         timeout: 5000,
-        params: {
+        data: {
             value: isManualControl.value
         }
     })
