@@ -11,6 +11,8 @@ import LogItem from './components/LogItem.vue';
 
 import Controller from './components/Controller.vue';
 
+import ImageStream from './components/ImageStream.vue';
+
 // Set up the Axios HTTP handler.
 const axios: Axios = inject('axios')!;
 axios.defaults.baseURL = "http://esp32.local";
@@ -78,7 +80,13 @@ function toggleManualControl(): void {
             </Container>
             <div class="vertical-separator"/>
             <Container class="container" :no-padding="true">
-                <template v-slot:title>MARKED IMAGE OUTPUT</template>
+                <template v-slot:title>RAW IMAGE OUTPUT</template>
+                <template v-slot:body>
+                    <ImageStream 
+                        imageUrl="http://esp32.local/output/raw"
+                        imageAlt="Raw image output."
+                    />
+                </template>
             </Container>
         </div>
         <div class="horizontal-separator"/>

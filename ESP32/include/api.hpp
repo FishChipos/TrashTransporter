@@ -45,6 +45,8 @@ class APIServer {
         // I'm pretty sure this has to be a pointer because it binds a network port to it so the web server cannot be copied.
         AsyncWebServer *webServer;
         Settings *settings;
+        uint8_t *cameraOutputBuffer;
+        size_t cameraOutputBufferSize;
 
         bool isLoggingEnabled;
 
@@ -65,7 +67,7 @@ class APIServer {
         void notFound(AsyncWebServerRequest *request);
 
     public:
-        APIServer(const int port, Settings *userSettings);
+        APIServer(const int port, Settings *userSettings, uint8_t *userCameraOutputBuffer, size_t userCameraOutputBufferSize);
 
         void enableLogging(bool on);
 

@@ -74,8 +74,10 @@ void APIServer::registerAPIEndpoints() {
     }
 }
 
-APIServer::APIServer(const int port, Settings *userSettings) {
+APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCameraOutputBuffer, size_t userCameraOutputBufferSize) {
     settings = userSettings;
+    cameraOutputBuffer = userCameraOutputBuffer;
+    cameraOutputBufferSize = userCameraOutputBufferSize;
 
     webServer = new AsyncWebServer(port);
 
@@ -210,7 +212,10 @@ void APIServer::getLogs(AsyncWebServerRequest *request) {
 }
 
 void APIServer::getOutputRaw(AsyncWebServerRequest *request) {
-
+    String responseBody(cameraOutputBuffer, cameraOutputBufferSize);
+    AsyncWebServerResponse *response = request->beginResponse(200, F("image/jpeg"), responseBody);
+    response->addHeader("Cache-Control", "max-age=0, must-revalidate, no-store");
+    request->send(response);
 }
 
 void APIServer::getOutputMarked(AsyncWebServerRequest *request) {
