@@ -7,18 +7,31 @@ const props = defineProps<{
     imageAlt?: string
 }>();
 
+const IMAGE_UPDATE_DELAY = 1000;
+const IMAGE_UPDATE_DELAY_ERROR = 5000;
+
 const imageSrc: Ref<string> = ref("");
+
+function imageLoad(): void {
+    clearInterval(updateImageInterval);
+    updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY);
+}
+
+function imageError(): void {
+    clearInterval(updateImageInterval);
+    updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY_ERROR);
+}
 
 function updateImage(): void {
     imageSrc.value = props.imageUrl + "#" + new Date().getTime();
 }
 
-setInterval(updateImage, 1000);
+let updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY);
 
 </script>
 
 <template>
-    <img :src="imageSrc" :alt="imageAlt"/>
+    <img :src="imageSrc" :alt="imageAlt" @error="imageError()" @load="imageLoad()"/>
 </template>
 
 <style scoped>

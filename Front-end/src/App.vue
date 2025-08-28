@@ -25,13 +25,16 @@ let isManualControl: Ref<boolean> = ref(false);
 // Internal list of logs received from the webserver.
 const logs: Ref<Log[]> = ref([]);
 
+const LOGS_UPDATE_DELAY = 1000;
+const LOGS_UPDATE_DELAY_ERROR = 5000;
+
 function getLogsFromServer(): void {
     axios.get("/logs", {
         timeout: 5000,
     })
     .then((response: AxiosResponse) => {
         clearInterval(readFromServerInterval);
-        readFromServerInterval = setInterval(getLogsFromServer, 1000);
+        readFromServerInterval = setInterval(getLogsFromServer, LOGS_UPDATE_DELAY);
 
         isLogsAccessible.value = true;
         if (logs.value.length > response.data.count) {
@@ -45,13 +48,13 @@ function getLogsFromServer(): void {
     .catch((_error: AxiosError) => {
         // Have longer pings when errors happen.
         clearInterval(readFromServerInterval);
-        readFromServerInterval = setInterval(getLogsFromServer, 5000);
+        readFromServerInterval = setInterval(getLogsFromServer, LOGS_UPDATE_DELAY_ERROR);
 
         isLogsAccessible.value = false;
     });
 }
 
-let readFromServerInterval = setInterval(getLogsFromServer, 1000);
+let readFromServerInterval = setInterval(getLogsFromServer, LOGS_UPDATE_DELAY);
 
 function toggleManualControl(): void {
     isManualControl.value = !isManualControl.value;
