@@ -75,16 +75,16 @@ function toggleManualControl(): void {
 <template>
     <div id="root-container">
         <div id="top-wrapper">
-            <Container class="container" :no-padding="true">
+            <Container class="container" no-padding>
                 <template v-slot:title>MAP</template>
             </Container>
             <div class="vertical-separator"/>
-            <Container class="container" :no-padding="true">
+            <Container class="container" no-padding>
                 <template v-slot:title>RAW IMAGE OUTPUT</template>
                 <template v-slot:body>
                     <ImageStream 
-                        imageUrl="http://esp32.local/output/raw"
-                        imageAlt="Raw image output."
+                        image-url="http://esp32.local/output/raw"
+                        image-alt="Raw image output."
                     />
                 </template>
             </Container>
@@ -104,12 +104,12 @@ function toggleManualControl(): void {
             <Container class="container">
                 <template v-slot:body>
                     <Controller
-                        :isDisabled="!isManualControl"
+                        :is-disabled="!isManualControl"
                     />
                 </template>
             </Container>
             <div class="vertical-separator"/>
-            <Container class="container" :isScrollable="true">
+            <Container class="container" is-scrollable>
                 <template v-slot:title>
                     <template v-if="isLogsAccessible">
                         LOGS
