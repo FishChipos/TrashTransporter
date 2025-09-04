@@ -67,7 +67,7 @@ class APIServer {
         void notFound(AsyncWebServerRequest *request);
 
     public:
-        APIServer(const int port, Settings *userSettings, uint8_t *userCameraOutputBuffer, size_t userCameraOutputBufferSize);
+        APIServer(const int port, Settings *userSettings);
 
         void enableLogging(bool on);
 

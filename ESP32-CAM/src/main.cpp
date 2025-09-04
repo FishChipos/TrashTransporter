@@ -1,12 +1,24 @@
 #include <Arduino.h>
 
+#include <WiFi.h>
+#include <ESPmDNS.h> // mDNS to broadcast API.
 #include <SerialTransfer.h>
+#include <SoftwareSerial.h> // Handle serial from GPS.
 #include <esp32cam.h>
+
+#include "api.hpp"
+
+// Wifi details.
+#define WIFI_SSID "thinNet"
+#define WIFI_PASS "156200AF"
 
 const int PIN_RX = 13;
 const int PIN_TX = 14;
 
-SerialTransfer camSerialTransfer;
+Settings settings;
+
+// Web server on port 80.
+APIServer server(80, &settings);
 
 const esp32cam::Resolution resolution = esp32cam::Resolution::find(320, 240);
 
@@ -14,9 +26,6 @@ void setup() {
     // Serial for logging to PC.
     Serial.begin(115200);
 
-    // Serial to communicate with the main ESP32 controller.
-    Serial1.begin(115200, SERIAL_8N1, PIN_RX, PIN_TX);
-    camSerialTransfer.begin(Serial1);
 
     esp32cam::setLogger(Serial);
     esp32cam::Config cameraConfig;
@@ -27,33 +36,40 @@ void setup() {
 
     esp32cam::Camera.begin(cameraConfig);
 
-    Serial.print("Hello world!");
+    // Connect to wifi.
+    Serial.print(F("Connecting to "));
+    Serial.print(F(WIFI_SSID));
+
+    WiFi.begin(F(WIFI_SSID), F(WIFI_PASS));
+
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(1000);
+        Serial.print(F("."));
+    }
+
+    Serial.println(F(""));
+    Serial.println(F("Wifi connected."));
+
+    // Set up mDNS for http://esp32.local
+    if (!MDNS.begin(F("esp32"))) {
+        Serial.println(F("Error while setting up mDNS responder!"));
+        delay(2000);
+        ESP.restart();
+    }
+
+    Serial.println(F("mDNS responder started for host: http://esp32.local"));
+
+    // Set up the HTTP web server.
+    server.enableLogging(true);
+    server.begin();
+    Serial.println(F("HTTP server started on port 80."));
+
+    Serial.println(F("Further logs can also be accessed from the webserver."));
+
+    server.log(F("Log test."));
 }
 
 void loop() {
-    std::unique_ptr<esp32cam::Frame> frame = esp32cam::capture();
-
-    size_t packetIDSize = sizeof(uint16_t);
-
-
-    size_t packetCount = frame->size() / (MAX_PACKET_SIZE - packetIDSize);
-
-    if (frame->size() % (MAX_PACKET_SIZE - packetIDSize)) ++packetCount;
-
-    for (uint16_t packet = 0; packet < packetCount; ++packet) {
-        uint8_t dataSize = MAX_PACKET_SIZE - packetIDSize;
-        size_t dataIndex = packet * dataSize;
-        
-        if (packet == packetCount - 1) {
-            dataSize = frame->size() - dataIndex;
-        }
-
-        uint8_t sendSize = camSerialTransfer.txObj(packet);
-        sendSize = camSerialTransfer.txObj(frame->data()[dataIndex], sendSize, dataSize);
-
-        camSerialTransfer.sendData(sendSize);
-        delay(50);
-    }
 
     delay(100);
 }

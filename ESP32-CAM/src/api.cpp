@@ -1,7 +1,5 @@
 #include "api.hpp"
 
-#include <optional>
-
 // ServerLog implementations.
 ServerLog::ServerLog(String userContent) {
     timestamp = std::time(NULL);
@@ -74,20 +72,18 @@ void APIServer::registerAPIEndpoints() {
     }
 }
 
-APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCameraOutputBuffer, size_t userCameraOutputBufferSize) {
-    settings = userSettings;
-    cameraOutputBuffer = userCameraOutputBuffer;
-    cameraOutputBufferSize = userCameraOutputBufferSize;
+APIServer::APIServer(const int port, Settings *settings) {
+    this->settings = settings;
 
-    webServer = new AsyncWebServer(port);
+    this->webServer = new AsyncWebServer(port);
 
     // Add CORS middleware to make the API accessible to other hosts.
-    webServer->addMiddleware(new AsyncCorsMiddleware());
+    this->webServer->addMiddleware(new AsyncCorsMiddleware());
 
     // Define API request handlers.
-    webServer->onNotFound([this](AsyncWebServerRequest *request){notFound(request);});
+    this->webServer->onNotFound([this](AsyncWebServerRequest *request){notFound(request);});
 
-    endpoints.push_back({
+    this->endpoints.push_back({
         F("/"), 
         HTTP_GET, 
         F("Root path."),
@@ -95,7 +91,7 @@ APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCamera
             getRoot(request);
         }
     });
-    endpoints.push_back({
+    this->endpoints.push_back({
         F("/logs"), 
         HTTP_GET, 
         F("Server logs."),
@@ -103,7 +99,7 @@ APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCamera
             getLogs(request);
         }
     });
-    endpoints.push_back({
+    this->endpoints.push_back({
         F("/output/raw"), 
         HTTP_GET, 
         F("Raw image output."),
@@ -111,7 +107,7 @@ APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCamera
             getOutputRaw(request);
         }
     });
-    endpoints.push_back({
+    this->endpoints.push_back({
         F("/output/marked"), 
         HTTP_GET, 
         F("Marked image output."),
@@ -119,7 +115,7 @@ APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCamera
             getOutputMarked(request);
         }
     });
-    endpoints.push_back({
+    this->endpoints.push_back({
         F("/settings/manualcontrol"), 
         HTTP_PATCH, 
         F("Set manual control for the robot."),
@@ -132,7 +128,7 @@ APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCamera
             {F("value"), F("Set to true for manual control, false otherwise.")}
         }
     });
-    endpoints.push_back({
+    this->endpoints.push_back({
         F("/controls/move"),
         HTTP_PATCH,
         F("Move the robot."),
@@ -149,9 +145,9 @@ APIServer::APIServer(const int port, Settings *userSettings, uint8_t *userCamera
 }
 
 void APIServer::begin() {
-    registerAPIEndpoints();
+    this->registerAPIEndpoints();
 
-    webServer->begin();
+    this->webServer->begin();
 }
 
 // You better write your Booleans in lower case.
@@ -212,10 +208,10 @@ void APIServer::getLogs(AsyncWebServerRequest *request) {
 }
 
 void APIServer::getOutputRaw(AsyncWebServerRequest *request) {
-    String responseBody(cameraOutputBuffer, cameraOutputBufferSize);
-    AsyncWebServerResponse *response = request->beginResponse(200, F("image/jpeg"), responseBody);
-    response->addHeader("Cache-Control", "max-age=0, must-revalidate, no-store");
-    request->send(response);
+    // String responseBody(cameraOutputBuffer, cameraOutputBufferSize);
+    // AsyncWebServerResponse *response = request->beginResponse(200, F("image/jpeg"), responseBody);
+    // response->addHeader("Cache-Control", "max-age=0, must-revalidate, no-store");
+    // request->send(response);
 }
 
 void APIServer::getOutputMarked(AsyncWebServerRequest *request) {
@@ -226,7 +222,7 @@ void APIServer::setManualControl(AsyncWebServerRequest *request) {
     // No error checking because we ball.
     const AsyncWebParameter *value = request->getParam(F("value"));
 
-    settings->manualControl = stringToBool(value->value());
+    this->settings->manualControl = stringToBool(value->value());
     log(String("Set manual control to ") + value->value() + String("."));
     request->send(204);
 }
