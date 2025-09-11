@@ -123,18 +123,22 @@ function toggleManualControl(): void {
                 </template>
                 <template v-slot:body>
                     <template v-if="isLogsAccessible">
-                        <LogItem
-                            v-for="log in logs"
-                            :log="log"
-                        />
+                        <div>
+                            <LogItem
+                                v-for="log in logs"
+                                :log="log"
+                            />
+                        </div>
                     </template>
                     <template v-else>
-                        Common causes:
-                        <ul>
-                            <li>The webserver is inactive.</li>
-                            <li>The webserver is not on the same network as this device.</li>
-                            <li>Poor network conditions.</li>
-                        </ul>
+                        <div>
+                            Common causes:
+                            <ul>
+                                <li>The webserver is inactive.</li>
+                                <li>The webserver is not on the same network as this device.</li>
+                                <li>Poor network conditions.</li>
+                            </ul>
+                        </div>
                     </template>
                 </template>
             </Container>
@@ -148,6 +152,11 @@ ul {
     padding-left: 20px;
 }
 
+.container {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
 .vertical-separator {
     height: 100%;
     border-right: 2px solid var(--main-color);
@@ -156,15 +165,6 @@ ul {
 .horizontal-separator {
     width: 100%;
     border-bottom: 2px solid var(--main-color);
-}
-
-.container {
-    flex-grow: 1;
-    flex-basis: 0;
-
-    height: auto;
-
-    
 }
 
 .setting, .setting input {
@@ -198,5 +198,4 @@ ul {
 
     height: 50%;
 }
-
 </style>

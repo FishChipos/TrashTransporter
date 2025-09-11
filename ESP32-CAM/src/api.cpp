@@ -1,5 +1,7 @@
 #include "api.hpp"
 
+#include <esp32cam.h>
+
 // ServerLog implementations.
 ServerLog::ServerLog(String userContent) {
     timestamp = std::time(NULL);
@@ -208,10 +210,9 @@ void APIServer::getLogs(AsyncWebServerRequest *request) {
 }
 
 void APIServer::getOutputRaw(AsyncWebServerRequest *request) {
-    // String responseBody(cameraOutputBuffer, cameraOutputBufferSize);
-    // AsyncWebServerResponse *response = request->beginResponse(200, F("image/jpeg"), responseBody);
-    // response->addHeader("Cache-Control", "max-age=0, must-revalidate, no-store");
-    // request->send(response);
+    esp32cam::MjpegConfig mjpegConfig;
+    mjpegConfig.minInterval = -1;
+    request->send(new esp32cam::asyncweb::MjpegResponse(mjpegConfig));
 }
 
 void APIServer::getOutputMarked(AsyncWebServerRequest *request) {

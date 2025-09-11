@@ -26,7 +26,6 @@ void setup() {
     // Serial for logging to PC.
     Serial.begin(115200);
 
-
     esp32cam::setLogger(Serial);
     esp32cam::Config cameraConfig;
     cameraConfig.setBufferCount(3);
@@ -34,7 +33,10 @@ void setup() {
     cameraConfig.setPins(esp32cam::pins::AiThinker);
     cameraConfig.setResolution(resolution);
 
-    esp32cam::Camera.begin(cameraConfig);
+    if (!esp32cam::Camera.begin(cameraConfig)) {
+        Serial.println("Camera failed to start!");
+        while (1);
+    }
 
     // Connect to wifi.
     Serial.print(F("Connecting to "));

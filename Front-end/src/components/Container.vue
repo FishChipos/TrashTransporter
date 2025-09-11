@@ -20,9 +20,7 @@ const padding = props.noPadding ? "0" : "1rem";
             <b><slot name="title"/></b>
         </div>
         <div id="body">
-            <slot name="body">
-
-            </slot>
+            <slot name="body"/>
         </div>
     </div>
 </template>
@@ -32,7 +30,11 @@ const padding = props.noPadding ? "0" : "1rem";
     display: flex;
     flex-direction: column;
 
+    width: 100%;
     height: 100%;
+
+    flex-grow: 1;
+    flex-basis: 0;
 }
 
 #title {
@@ -45,15 +47,21 @@ const padding = props.noPadding ? "0" : "1rem";
 
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
+
+    flex-grow: 0;
+    flex-basis: 0;
 }
 
 #body {
-    flex-grow: 1;
+    display: flex;
 
     padding: v-bind("padding");
 
     overflow-y: v-bind("overflowY");
     word-break: break-all;
     scrollbar-width: thin;
+
+    flex-grow: 1;
+    flex-basis: 0;
 }
 </style>

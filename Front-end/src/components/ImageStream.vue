@@ -7,14 +7,12 @@ const props = defineProps<{
     imageAlt?: string
 }>();
 
-const IMAGE_UPDATE_DELAY = 1000;
 const IMAGE_UPDATE_DELAY_ERROR = 5000;
 
 const imageSrc: Ref<string> = ref("");
 
 function imageLoad(): void {
     clearInterval(updateImageInterval);
-    updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY);
 }
 
 function imageError(): void {
@@ -26,7 +24,9 @@ function updateImage(): void {
     imageSrc.value = props.imageUrl + "#" + new Date().getTime();
 }
 
-let updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY);
+let updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY_ERROR);
+
+updateImage();
 
 </script>
 
@@ -36,10 +36,16 @@ let updateImageInterval = setInterval(updateImage, IMAGE_UPDATE_DELAY);
 
 <style scoped>
     img {
-        height: 100%;
+        object-position: center;
+
         object-fit: contain;
-        display: flex;
-        justify-content: space-evenly;
+
+        max-width: 100%;
+
+        justify-content: center;
         align-items: center;
+
+        flex-grow: 1;
+        flex-basis: 0;
     }
 </style>
